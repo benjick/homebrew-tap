@@ -47,6 +47,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Check out the tap first: a missing or bad TAP_TOKEN then fails the
+      # run before anything is published.
+      - name: Check out tap
+        uses: actions/checkout@v4
+        with:
+          repository: benjick/homebrew-tap
+          token: ${{ secrets.TAP_TOKEN }}
+          path: tap
+
       - name: Resolve version
         run: |
           tag="${GITHUB_REF_NAME}"
@@ -81,13 +90,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create "$TAG" "$ZIP" --title "$APP_NAME $VERSION" --generate-notes
-
-      - name: Check out tap
-        uses: actions/checkout@v4
-        with:
-          repository: benjick/homebrew-tap
-          token: ${{ secrets.TAP_TOKEN }}
-          path: tap
 
       - name: Bump cask
         working-directory: tap
