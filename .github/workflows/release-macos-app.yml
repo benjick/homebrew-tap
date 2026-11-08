@@ -25,6 +25,11 @@ on:
         required: false
         type: string
         default: ""
+      changelog:
+        description: Changelog file with a "## <version>" section per release
+        required: false
+        type: string
+        default: CHANGELOG.md
       runs-on:
         description: Runner image
         required: false
@@ -67,6 +72,29 @@ jobs:
           app_path="${{ inputs.app-path }}"
           echo "APP_PATH=${app_path:-.build/release/$APP_NAME.app}" >> "$GITHUB_ENV"
 
+      # Fails before building if the changelog has no section for this version.
+      - name: Extract release notes from changelog
+        env:
+          CHANGELOG: ${{ inputs.changelog }}
+        run: |
+          if [ ! -f "$CHANGELOG" ]; then
+            echo "::error::$CHANGELOG not found. Add it with a '## $VERSION' section."; exit 1
+          fi
+          # Print the lines between "## 1.2.3" (also "## [1.2.3]" or
+          # "## 1.2.3 - date") and the next "## " heading.
+          awk -v v="$VERSION" '
+            /^## / {
+              if (found) exit
+              h = $2; gsub(/[][]/, "", h)
+              if (h == v) { found = 1; next }
+            }
+            found { print }
+          ' "$CHANGELOG" > "$RUNNER_TEMP/notes.md"
+          if ! grep -q '[^[:space:]]' "$RUNNER_TEMP/notes.md"; then
+            echo "::error::No '## $VERSION' section (or it's empty) in $CHANGELOG."; exit 1
+          fi
+          cat "$RUNNER_TEMP/notes.md"
+
       - name: Build
         run: ${{ inputs.build-command }}
 
@@ -89,7 +117,7 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" "$ZIP" --title "$APP_NAME $VERSION" --generate-notes
+        run: gh release create "$TAG" "$ZIP" --title "$APP_NAME $VERSION" --notes-file "$RUNNER_TEMP/notes.md"
 
       - name: Bump cask
         working-directory: tap

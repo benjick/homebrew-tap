@@ -37,6 +37,10 @@ people can actually use.
       If in doubt, ask the owner whether to squash before the first push.
 - [ ] `.gitignore` covers `.build/`, `build/`, `.swiftpm/`, `.DS_Store` and
       `DerivedData/`.
+- [ ] **(required)** `CHANGELOG.md` at the root with a `## <version>` section
+      for the version being released (`## 1.2.3 - 2026-11-08` works). The
+      workflow uses that section as the GitHub release notes and fails before
+      building if it's missing. Path can be changed with the `changelog` input.
 
 ### README
 
@@ -136,6 +140,7 @@ Optional inputs:
 |---|---|---|
 | `build-command` | `bash scripts/build-app.sh` | The app builds with a different script, e.g. `sh scripts/app.sh` |
 | `app-path` | `.build/release/<app-name>.app` | The script puts the bundle elsewhere, e.g. `build/Chime.app` |
+| `changelog` | `CHANGELOG.md` | The changelog lives elsewhere |
 | `runs-on` | `macos-15` | The app needs a newer SDK, e.g. `LSMinimumSystemVersion` 26 needs a macOS 26 runner with Xcode 26 |
 
 ### 2. Add the cask to this tap
@@ -209,8 +214,9 @@ running copy of the app with the same bundle ID.
 
 ### 5. Release
 
-Tags must be annotated. The owner's git config refuses lightweight tags with
-"no tag message?":
+First add a section for the new version at the top of `CHANGELOG.md` and
+commit it. Then tag. Tags must be annotated; the owner's git config refuses
+lightweight tags with "no tag message?":
 
 ```sh
 git tag -a v1.0.0 -m "<AppName> 1.0.0"
