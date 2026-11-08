@@ -45,12 +45,12 @@ jobs:
       APP_NAME: ${{ inputs.app-name }}
       CASK: ${{ inputs.cask }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Check out the tap first: a missing or bad TAP_TOKEN then fails the
       # run before anything is published.
       - name: Check out tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: benjick/homebrew-tap
           token: ${{ secrets.TAP_TOKEN }}
