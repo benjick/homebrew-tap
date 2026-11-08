@@ -54,6 +54,21 @@ people can actually use.
 - [ ] How to uninstall, including anything the app set up outside its bundle.
 - [ ] Building from source.
 
+### Store listing (malm.me/apps)
+
+[benjick/malm.me](https://github.com/benjick/malm.me) reads these from the
+app's default branch when it builds, and lists the repo in its
+`content/apps.json`. Changes show up on its next deploy.
+
+- [ ] `docs/store.md`: frontmatter with `name`, `tagline` and `cask`
+      (required), plus `category`, `minimumMacOS`, `menuBar`, `bundleId`, and
+      `headline` and `color` for the featured card. The markdown body is the
+      store description. Copy `benjick/pullrequests`'s and adjust it.
+- [ ] `docs/icon.png`: the app icon at 512 px, written by the icon generator
+      next to `AppIcon.icns` so the two never drift apart.
+- [ ] `docs/screenshots/*.png`: shown in filename order (prefix `01-`, `02-`
+      to control it); the alt text comes from the filename.
+
 ### Icon and bundle
 
 - [ ] An `AppIcon.icns` with all standard sizes (16 to 512@2x) is copied into
