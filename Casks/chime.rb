@@ -1,6 +1,6 @@
 cask "chime" do
-  version "0.0.0"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  version "0.1.0"
+  sha256 "c97e3e57d2a14dc11d2c2a4a2050134acd0777188705edd52145d3599e83999c"
 
   url "https://github.com/benjick/chime/releases/download/v#{version}/Chime-#{version}.zip"
   name "Chime"
