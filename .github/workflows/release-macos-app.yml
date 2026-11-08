@@ -1,0 +1,102 @@
+# Reusable workflow: build a macOS .app from the calling repo, publish it as a
+# GitHub release, and bump its cask in this tap.
+#
+# Called from an app repo on tag push (v1.2.3). See README.md for the caller.
+name: Release macOS app
+
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        description: Bundle name without .app, e.g. PullRequests
+        required: true
+        type: string
+      cask:
+        description: Cask token in this tap, e.g. pullrequests
+        required: true
+        type: string
+      build-command:
+        description: Command that builds the .app bundle
+        required: false
+        type: string
+        default: bash scripts/build-app.sh
+      app-path:
+        description: Path to the built .app (defaults to .build/release/<app-name>.app)
+        required: false
+        type: string
+        default: ""
+      runs-on:
+        description: Runner image
+        required: false
+        type: string
+        default: macos-15
+    secrets:
+      TAP_TOKEN:
+        description: Token with contents:write on benjick/homebrew-tap
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ${{ inputs.runs-on }}
+    env:
+      APP_NAME: ${{ inputs.app-name }}
+      CASK: ${{ inputs.cask }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          if [[ ! "$tag" =~ ^v[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "::error::Tag '$tag' must look like v1.2.3"; exit 1
+          fi
+          echo "TAG=$tag" >> "$GITHUB_ENV"
+          echo "VERSION=${tag#v}" >> "$GITHUB_ENV"
+          app_path="${{ inputs.app-path }}"
+          echo "APP_PATH=${app_path:-.build/release/$APP_NAME.app}" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: ${{ inputs.build-command }}
+
+      - name: Stamp version and ad-hoc sign
+        run: |
+          plist="$APP_PATH/Contents/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$plist"
+          # Editing Info.plist invalidates any signature, so (re)sign last.
+          codesign --force --deep --sign - "$APP_PATH"
+          codesign --verify --deep --strict "$APP_PATH"
+
+      - name: Package
+        run: |
+          zip="$APP_NAME-$VERSION.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" "$zip"
+          echo "ZIP=$zip" >> "$GITHUB_ENV"
+          echo "SHA256=$(shasum -a 256 "$zip" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$TAG" "$ZIP" --title "$APP_NAME $VERSION" --generate-notes
+
+      - name: Check out tap
+        uses: actions/checkout@v4
+        with:
+          repository: benjick/homebrew-tap
+          token: ${{ secrets.TAP_TOKEN }}
+          path: tap
+
+      - name: Bump cask
+        working-directory: tap
+        run: |
+          cask_file="Casks/$CASK.rb"
+          sed -i '' -E "s/^  version \".*\"/  version \"$VERSION\"/" "$cask_file"
+          sed -i '' -E "s/^  sha256 \".*\"/  sha256 \"$SHA256\"/" "$cask_file"
+          git diff --exit-code --quiet "$cask_file" && { echo "::error::Cask unchanged"; exit 1; }
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "$CASK $VERSION"
+          git push
