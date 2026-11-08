@@ -1,6 +1,6 @@
 cask "pullrequests" do
-  version "1.0.4"
-  sha256 "49cce41b5fc4ab70c224d553d188745c215284f43a6671089c96c25c8337c3b7"
+  version "1.0.5"
+  sha256 "c14bc328c4d4cd96ea6704c3aec11df67a51049f19ffde12ab95a387ce6200bc"
 
   url "https://github.com/benjick/pullrequests/releases/download/v#{version}/PullRequests-#{version}.zip"
   name "PullRequests"
