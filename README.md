@@ -50,7 +50,5 @@ write** on this repository only, stored as an Actions secret in each app repo.
 
 ### Adding an app
 
-1. Add `Casks/<name>.rb` (copy an existing one; version and sha256 get
-   overwritten on the first release).
-2. Add the caller workflow and the `TAP_TOKEN` secret to the app repo.
-3. Push a tag.
+See [ADDING-AN-APP.md](ADDING-AN-APP.md) for the full checklist. It's written so
+a coding agent in the app's repo can follow it.
