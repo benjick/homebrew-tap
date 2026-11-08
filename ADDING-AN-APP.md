@@ -68,6 +68,11 @@ app's default branch when it builds, and lists the repo in its
       next to `AppIcon.icns` so the two never drift apart.
 - [ ] `docs/screenshots/*.png`: shown in filename order (prefix `01-`, `02-`
       to control it); the alt text comes from the filename.
+- [ ] Optional, for apps that make sounds: `docs/sounds/*.m4a`, shown as
+      press-to-play buttons under the app's name, in filename order and
+      labelled from the filename. A same-named `.svg` drawn with
+      `currentColor` becomes the button's graph. See `benjick/chime`'s
+      `scripts/store-sounds.sh`.
 
 ### Icon and bundle
 

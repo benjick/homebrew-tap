@@ -9,6 +9,7 @@ brew install --cask benjick/tap/pullrequests
 | Cask | App |
 |---|---|
 | `pullrequests` | [PullRequests](https://github.com/benjick/pullrequests): menu bar app for monitoring GitHub pull requests |
+| `chime` | [Chime](https://github.com/benjick/chime): soft creature voices for Claude Code |
 
 The apps are ad-hoc signed, not notarised. Each cask removes the quarantine
 flag after install so macOS doesn't block the first launch. Downloading a zip
